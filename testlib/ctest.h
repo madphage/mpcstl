@@ -116,7 +116,6 @@ void assert_false(int real, const char* caller, int line);
 void assert_fail(const char* caller, int line);
 #define ASSERT_FAIL() assert_fail(__FILE__, __LINE__)
 
-#ifdef CTEST_MAIN
 
 #include <setjmp.h>
 #include <stdarg.h>
@@ -314,7 +313,7 @@ static void *find_symbol(struct ctest *test, const char *fname)
 }
 #endif
 
-int ctest_main(int argc, const char *argv[])
+int main(int argc, const char *argv[])
 {
     static int total = 0;
     static int num_ok = 0;
@@ -405,8 +404,6 @@ int ctest_main(int argc, const char *argv[])
     color_print(color, results);
     return num_fail;
 }
-
-#endif
 
 #endif
 

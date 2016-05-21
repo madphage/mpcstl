@@ -31,6 +31,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// on MinGW, which uses microsofts msvcrt.dll printf, we need to use
+#define HEX64FMT "I64x"
+// instead of the traditional/gnu %llx
+// we leave off the % so that we can do length stuff beforehand
+
 enum {
 	DUMP_PREFIX_NONE,
 	DUMP_PREFIX_ADDRESS,

@@ -4,8 +4,8 @@ INCPATH		?= $(PREFIX)/include/ulib
 LIBPATH		?= $(PREFIX)/lib
 LIBNAME		?= undef
 
-CFLAGS		?= -g3 -O2 -Wall -W -Werror -pipe -c -fPIC
-CXXFLAGS	?= -g3 -O2 -Wall -W -Werror -pipe -c -fPIC
+CFLAGS		?= -g3 -O2 -Wall -W -Werror -Wno-error=format -pipe -c
+CXXFLAGS	?= -g3 -O2 -Wall -W -Werror -pipe -c
 DEBUG		?=
 
 OBJS		= \
