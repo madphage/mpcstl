@@ -19,6 +19,7 @@
 typedef void (*SetupFunc)(void*);
 typedef void (*TearDownFunc)(void*);
 
+#pragma pack(push, 1)
 struct ctest {
     const char* ssname;  // suite name
     const char* ttname;  // test name
@@ -28,9 +29,9 @@ struct ctest {
     void* data;
     SetupFunc setup;
     TearDownFunc teardown;
-
     unsigned int magic;
 };
+#pragma pack(pop);
 
 #define __FNAME(sname, tname) __ctest_##sname##_##tname##_run
 #define __TNAME(sname, tname) __ctest_##sname##_##tname
@@ -42,6 +43,7 @@ struct ctest {
 #define __Test_Section __attribute__ ((unused,section (".ctest")))
 #endif
 
+#if __linux__ || __APPLE__
 #define __CTEST_STRUCT(sname, tname, _skip, __data, __setup, __teardown) \
     struct ctest __TNAME(sname, tname) __Test_Section = { \
         .ssname=#sname, \
@@ -52,6 +54,22 @@ struct ctest {
         .setup = (SetupFunc)__setup,					\
         .teardown = (TearDownFunc)__teardown,				\
         .magic = __CTEST_MAGIC };
+#elif _WIN32
+#define __CTEST_STRUCT(sname, tname, _skip, __data, __setup, __teardown) \
+	__pragma(data_seg(push, "ctest")); \
+    struct ctest __TNAME(sname, tname) = { \
+        .ssname=#sname, \
+        .ttname=#tname, \
+        .run = __FNAME(sname, tname), \
+        .skip = _skip, \
+        .data = __data, \
+        .setup = (SetupFunc)__setup,					\
+        .teardown = (TearDownFunc)__teardown,				\
+        .magic = __CTEST_MAGIC }; \
+	__pragma(data_seg(pop));
+#else
+#error "unknown arch"
+#endif
 
 #define CTEST_DATA(sname) struct sname##_data
 
@@ -121,13 +139,19 @@ void assert_fail(const char* caller, int line);
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/time.h>
+#if !(defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__))
 #include <unistd.h>
+#endif
 #include <stdint.h>
 #include <stdlib.h>
 
 #ifdef __APPLE__
 #include <dlfcn.h>
+#endif
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#else
+#include <sys/time.h>
 #endif
 
 //#define COLOR_OK
@@ -277,6 +301,11 @@ static int suite_filter(struct ctest* t) {
     return strncmp(suite_name, t->ssname, strlen(suite_name)) == 0;
 }
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+static uint64_t getCurrentTime() {
+	return 0;
+}
+#else
 static uint64_t getCurrentTime() {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -285,6 +314,7 @@ static uint64_t getCurrentTime() {
     now64 += (now.tv_usec);
     return now64;
 }
+#endif
 
 static void color_print(const char* color, const char* text) {
     if (color_output)
@@ -332,6 +362,7 @@ int main(int argc, const char *argv[])
 
     struct ctest* ctest_begin = &__TNAME(suite, test);
     struct ctest* ctest_end = &__TNAME(suite, test);
+	printf("Begin: %p, End: %p\n", ctest_begin, ctest_end);
     // find begin and end of section by comparing magics
     while (1) {
         struct ctest* t = ctest_begin-1;
@@ -343,7 +374,10 @@ int main(int argc, const char *argv[])
         if (t->magic != __CTEST_MAGIC) break;
         ctest_end++;
     }
+	printf("Begin: %p, End: %p\n", ctest_begin, ctest_end);
     ctest_end++;    // end after last one
+	printf("# Tests: %d\n", (ctest_end - ctest_begin)/sizeof(struct ctest)); 
+	printf("Sizeof ctest: %d\n", sizeof(struct ctest));
 
     static struct ctest* test;
     for (test = ctest_begin; test != ctest_end; test++) {
