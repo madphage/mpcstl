@@ -31,7 +31,7 @@ struct ctest {
     TearDownFunc teardown;
     unsigned int magic;
 };
-#pragma pack(pop);
+#pragma pack(pop)
 
 #define __FNAME(sname, tname) __ctest_##sname##_##tname##_run
 #define __TNAME(sname, tname) __ctest_##sname##_##tname
@@ -51,22 +51,24 @@ struct ctest {
         .run = __FNAME(sname, tname), \
         .skip = _skip, \
         .data = __data, \
-        .setup = (SetupFunc)__setup,					\
-        .teardown = (TearDownFunc)__teardown,				\
+        .setup = (SetupFunc)__setup,                    \
+        .teardown = (TearDownFunc)__teardown,                \
         .magic = __CTEST_MAGIC };
 #elif _WIN32
 #define __CTEST_STRUCT(sname, tname, _skip, __data, __setup, __teardown) \
-	__pragma(data_seg(push, "ctest")); \
+    const char * __TNAME(sname, tname)_sname = #sname; \
+    const char * __TNAME(sname, tname)_tname = #tname; \
+    __pragma(data_seg(push, "ctest")); \
     struct ctest __TNAME(sname, tname) = { \
-        .ssname=#sname, \
-        .ttname=#tname, \
+        .ssname=&__TNAME(sname, tname)_sname, \
+        .ttname=&__TNAME(sname, tname)_tname, \
         .run = __FNAME(sname, tname), \
         .skip = _skip, \
         .data = __data, \
-        .setup = (SetupFunc)__setup,					\
-        .teardown = (TearDownFunc)__teardown,				\
+        .setup = (SetupFunc)__setup,                    \
+        .teardown = (TearDownFunc)__teardown,                \
         .magic = __CTEST_MAGIC }; \
-	__pragma(data_seg(pop));
+    __pragma(data_seg(pop));
 #else
 #error "unknown arch"
 #endif
@@ -184,7 +186,8 @@ typedef int (*filter_func)(struct ctest*);
 #define ANSI_WHITE    "\033[01;37m"
 #define ANSI_NORMAL   "\033[0m"
 
-static CTEST(suite, test) { }
+CTEST(ctest_dummy, nop1) { }
+CTEST(ctest_dummy, nop2) { }
 
 static void msg_start(const char* color, const char* title) {
     int size;
@@ -303,7 +306,7 @@ static int suite_filter(struct ctest* t) {
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 static uint64_t getCurrentTime() {
-	return 0;
+    return 0;
 }
 #else
 static uint64_t getCurrentTime() {
@@ -360,33 +363,38 @@ int main(int argc, const char *argv[])
     color_output = isatty(1);
     uint64_t t1 = getCurrentTime();
 
-    struct ctest* ctest_begin = &__TNAME(suite, test);
-    struct ctest* ctest_end = &__TNAME(suite, test);
-	printf("Begin: %p, End: %p\n", ctest_begin, ctest_end);
+    struct ctest* ctest_begin = &__TNAME(ctest_dummy, nop1);
+    struct ctest* ctest_end = &__TNAME(ctest_dummy, nop2);
+    size_t stride = ((uint8_t *)&__TNAME(ctest_dummy, nop2)) - ((uint8_t *)&__TNAME(ctest_dummy, nop1));
+#define CTEST_DEC_STRIDE(p) ((struct ctest*)(((uint8_t*)p) - stride))
+#define CTEST_INC_STRIDE(p) ((struct ctest*)(((uint8_t*)p) + stride))
+
+    printf("Begin: %p, End: %p, Stride: %d\n", ctest_begin, ctest_end, stride);
     // find begin and end of section by comparing magics
     while (1) {
-        struct ctest* t = ctest_begin-1;
-        if (t->magic != __CTEST_MAGIC) break;
-        ctest_begin--;
+        struct ctest* t = CTEST_DEC_STRIDE(ctest_begin);
+        if (t->magic != __CTEST_MAGIC) {
+            break;
+        }
+        ctest_begin = CTEST_DEC_STRIDE(ctest_begin);
     }
     while (1) {
-        struct ctest* t = ctest_end+1;
+        struct ctest* t = CTEST_INC_STRIDE(ctest_end);
         if (t->magic != __CTEST_MAGIC) break;
-        ctest_end++;
+        ctest_end = CTEST_INC_STRIDE(ctest_end);
     }
-	printf("Begin: %p, End: %p\n", ctest_begin, ctest_end);
-    ctest_end++;    // end after last one
-	printf("# Tests: %d\n", (ctest_end - ctest_begin)/sizeof(struct ctest)); 
-	printf("Sizeof ctest: %d\n", sizeof(struct ctest));
+    ctest_end = CTEST_INC_STRIDE(ctest_end);    // end after last one
+    printf("# Tests: %d\n", (((uint8_t*)ctest_end) - ((uint8_t*)ctest_begin))/stride);
+    printf("Sizeof ctest: %d\n", sizeof(struct ctest));
 
     static struct ctest* test;
-    for (test = ctest_begin; test != ctest_end; test++) {
-        if (test == &__ctest_suite_test) continue;
+    for (test = ctest_begin; test != ctest_end; test = CTEST_INC_STRIDE(test)) {
+        if (test == &__TNAME(ctest_dummy, nop1) || test == &__TNAME(ctest_dummy, nop2)) continue;
         if (filter(test)) total++;
     }
 
-    for (test = ctest_begin; test != ctest_end; test++) {
-        if (test == &__ctest_suite_test) continue;
+    for (test = ctest_begin; test != ctest_end; test = CTEST_INC_STRIDE(test)) {
+        if (test == &__TNAME(ctest_dummy, nop1) || test == &__TNAME(ctest_dummy, nop2)) continue;
         if (filter(test)) {
             ctest_errorbuffer[0] = 0;
             ctest_errorsize = MSG_SIZE-1;
