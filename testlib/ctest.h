@@ -56,12 +56,12 @@ struct ctest {
         .magic = __CTEST_MAGIC };
 #elif _WIN32
 #define __CTEST_STRUCT(sname, tname, _skip, __data, __setup, __teardown) \
-    const char * __TNAME(sname, tname)_sname = #sname; \
-    const char * __TNAME(sname, tname)_tname = #tname; \
+    static const char __TNAME(sname, tname)_sname[] = #sname; \
+    static const char __TNAME(sname, tname)_tname[] = #tname; \
     __pragma(data_seg(push, "ctest")); \
     struct ctest __TNAME(sname, tname) = { \
-        .ssname=&__TNAME(sname, tname)_sname, \
-        .ttname=&__TNAME(sname, tname)_tname, \
+        .ssname = __TNAME(sname, tname)_sname, \
+        .ttname = __TNAME(sname, tname)_tname, \
         .run = __FNAME(sname, tname), \
         .skip = _skip, \
         .data = __data, \
@@ -83,7 +83,7 @@ struct ctest {
 
 #define __CTEST_INTERNAL(sname, tname, _skip) \
     void __FNAME(sname, tname)(); \
-    __CTEST_STRUCT(sname, tname, _skip, NULL, NULL, NULL) \
+    __CTEST_STRUCT(sname, tname, _skip, NULL, NULL, NULL); \
     void __FNAME(sname, tname)()
 
 #ifdef __APPLE__
