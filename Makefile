@@ -16,14 +16,19 @@ CL_FLAGS := /nologo /Wall /WX /wd4710 /wd4668 /wd4100 /Itestlib
 # CL_FLAGS := /nologo /wd4710 /Itestlib
 LINK_FLAGS := /nologo
 
-all: test_ctest.exe
+all: test_mpcstl.exe
 
 clean:
 	rm test_ctest.exe test/test_ctest.obj
 
-test_ctest.exe: test/test_ctest.obj
-	link $(LINK_FLAGS) test/test_ctest.obj /out:test_ctest.exe
+# $@ is the target of the rule
+# $^ is all inputs
+# $< is the first input
+test_mpcstl.exe: testlib/ctest.obj test/test_ctest_suite1.obj test/test_ctest_suite2.obj
+	link $(LINK_FLAGS) /out:$@ $^
 
-test/test_ctest.obj: test/test_ctest.c
-	cl $(CL_FLAGS) /c /Fo:test/test_ctest.obj test/test_ctest.c
+# make obj files from their corresponding c files
+%.obj: %.c
+	cl $(CL_FLAGS) /c /Fo:$@ $<
+
 
