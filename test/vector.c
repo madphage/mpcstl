@@ -32,12 +32,11 @@ CTEST(vector, alloc) {
 	Vuint32_t * uint32_vector = NULL;
 
 	uint32_vector = Vuint32_t_mk_prealloc(4);
-	ASSERT_TRUE(uint32_vector);
+	ASSERT_TRUE(uint32_vector != NULL);
 	ASSERT_TRUE(uint32_vector->available == 4);
 	ASSERT_TRUE(uint32_vector->used == 0);
 
 	for (i = 0; i < 4; ++i) {
 		ASSERT_TRUE(uint32_vector->items[i] == 0);
 	}
-	return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+// Need to have this one level of indirection so expansion happens of names before we concatenate them
 #define CAT(x, y) CAT_INNER(x, y)
 #define CAT_INNER(x, y) x ## y
 #define CAT3(x, y, z) CAT3_INNER(x, y, z)
