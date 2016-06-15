@@ -1,10 +1,15 @@
 # Object files
 *.o
+*.obj
 *.ko
+
+# Preprocessor output
+*.E
 
 # Libraries
 *.lib
 *.a
+*.swp
 
 # Shared objects (inc. Windows DLLs)
 *.dll

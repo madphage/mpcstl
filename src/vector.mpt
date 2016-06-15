@@ -1,0 +1,85 @@
+#ifndef mptDeclare
+#define mptDeclare 1
+#endif
+
+#ifndef mptDefine
+#define mptDefine 0
+#endif
+
+#ifndef VectorITEM
+#error "Must define VectorITEM"
+#endif
+
+#ifndef VectorITEM_primitive
+#define VectorITEM_primitive 0
+#endif
+
+#define mptTypeName CAT(V, VectorITEM)
+#define mptStructName CAT(_V, VectorITEM)
+#define mptTypeFunc(fname) CAT3(mptTypeName, _, fname)
+
+#if mptDeclare
+
+#include "macro_utils.h"
+
+typedef struct mptStructName {
+	uint32_t available;
+	uint32_t used;
+	VectorITEM * items;
+} mptTypeName;
+
+mptTypeName * mptTypeFunc(mk_prealloc)(uint32_t num_entries);
+
+#endif //mptDeclare
+
+#if mptDefine
+
+mptTypeName * mptTypeFunc(mk_prealloc)(uint32_t num_entries) {
+	mptTypeName * res = NULL;
+	mptTypeName * tmp = NULL;
+	uint8_t * items = NULL;
+
+	items = calloc(num_entries, sizeof(VectorITEM));
+	if (!items) {
+		goto Exit;
+	}
+
+	tmp = calloc(1, sizeof(mptTypeName));
+	if (!tmp) {
+		goto Exit;
+	}
+
+	tmp->available = num_entries;
+	// tmp->used = 0; # inherited from calloc
+	tmp->items = (VectorITEM *) items;
+	items = NULL;
+
+	res = tmp;
+	tmp = NULL;
+
+Exit:
+	if (items) {
+		free(items);
+		items = NULL;
+	}
+
+	if (tmp) {
+		free(tmp);
+		tmp = NULL;
+	}
+	
+	return res;
+}
+
+#endif //mptDefine
+
+#undef mptTypeName
+#undef mptTypeFunc
+
+#undef mptDeclare
+#undef mptDefine
+#undef VectorITEM
+#undef VectorITEM_primitive
+
+
+
