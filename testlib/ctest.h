@@ -26,8 +26,10 @@
 #endif
 
 
+/*
 typedef void (*SetupFunc)(void*);
 typedef void (*TearDownFunc)(void*);
+*/
 
 #pragma pack(push, 1)
 struct ctest {
@@ -37,8 +39,8 @@ struct ctest {
     int skip;
 
     void* data;
-    SetupFunc setup;
-    TearDownFunc teardown;
+//    SetupFunc setup;
+//    TearDownFunc teardown;
     unsigned int magic;
 };
 #pragma pack(pop)
@@ -61,9 +63,9 @@ struct ctest {
         .run = __FNAME(sname, tname), \
         .skip = _skip, \
         .data = __data, \
-        .setup = (SetupFunc)__setup,                    \
+/*		.setup = (SetupFunc)__setup,                    \
         .teardown = (TearDownFunc)__teardown,                \
-        .magic = __CTEST_MAGIC };
+*/		.magic = __CTEST_MAGIC };
 #elif _WIN32
 #define __CTEST_STRUCT(sname, tname, _skip, __data, __setup, __teardown) \
     static const char __TNAME(sname, tname)_sname[] = #sname; \
@@ -75,14 +77,15 @@ struct ctest {
         .run = __FNAME(sname, tname), \
         .skip = _skip, \
         .data = __data, \
-        .setup = (SetupFunc)__setup,                    \
+/*      .setup = (SetupFunc)__setup,                    \
         .teardown = (TearDownFunc)__teardown,                \
-        .magic = __CTEST_MAGIC }; \
+*/      .magic = __CTEST_MAGIC }; \
     __pragma(data_seg(pop));
 #else
 #error "unknown arch"
 #endif
 
+/*
 #define CTEST_DATA(sname) struct sname##_data
 
 #define CTEST_SETUP(sname) \
@@ -90,12 +93,14 @@ struct ctest {
 
 #define CTEST_TEARDOWN(sname) \
     void __attribute__ ((weak)) sname##_teardown(struct sname##_data* data)
+*/
 
 #define __CTEST_INTERNAL(sname, tname, _skip) \
     void __FNAME(sname, tname)(void); \
     __CTEST_STRUCT(sname, tname, _skip, NULL, NULL, NULL); \
     void __FNAME(sname, tname)(void)
 
+/*
 #ifdef __APPLE__
 #define SETUP_FNAME(sname) NULL
 #define TEARDOWN_FNAME(sname) NULL
@@ -103,7 +108,9 @@ struct ctest {
 #define SETUP_FNAME(sname) sname##_setup
 #define TEARDOWN_FNAME(sname) sname##_teardown
 #endif
+*/
 
+/*
 #define __CTEST2_INTERNAL(sname, tname, _skip) \
     static struct sname##_data  __ctest_##sname##_data; \
     CTEST_SETUP(sname); \
@@ -111,6 +118,7 @@ struct ctest {
     void __FNAME(sname, tname)(struct sname##_data* data); \
     __CTEST_STRUCT(sname, tname, _skip, &__ctest_##sname##_data, SETUP_FNAME(sname), TEARDOWN_FNAME(sname)) \
     void __FNAME(sname, tname)(struct sname##_data* data)
+*/
 
 
 void CTEST_LOG(char *fmt, ...);
@@ -417,6 +425,7 @@ int main(int argc, const char *argv[])
             } else {
                 int result = setjmp(ctest_err);
                 if (result == 0) {
+/*
 #ifdef __APPLE__
                     if (!test->setup) {
                         test->setup = find_symbol(test, "setup");
@@ -425,13 +434,16 @@ int main(int argc, const char *argv[])
                         test->teardown = find_symbol(test, "teardown");
                     }
 #endif
+*/
 
+/*
                     if (test->setup) test->setup(test->data);
                     if (test->data) 
                       test->run(test->data);
                     else 
+*/
                       test->run();
-                    if (test->teardown) test->teardown(test->data);
+                    //if (test->teardown) test->teardown(test->data);
                     // if we got here it's ok
 #ifdef COLOR_OK
                     color_print(ANSI_BGREEN, "[OK]");
@@ -452,7 +464,7 @@ int main(int argc, const char *argv[])
 
     const char* color = (num_fail) ? ANSI_BRED : ANSI_GREEN;
     char results[80];
-    sprintf(results, "RESULTS: %d tests (%d ok, %d failed, %d skipped) ran in %lld ms", total, num_ok, num_fail, num_skip, (t2 - t1)/1000);
+    snprintf(results, 80, "RESULTS: %d tests (%d ok, %d failed, %d skipped) ran in %lld ms", total, num_ok, num_fail, num_skip, (t2 - t1)/1000);
     color_print(color, results);
     return num_fail;
 }
