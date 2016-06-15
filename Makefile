@@ -12,11 +12,11 @@
 #  testlib\ctest.h(299): warning C4100: 't': unreferenced formal parameter
 
 # TODO: make this file relative
-CL_FLAGS := /nologo /Wall /WX /wd4710 /wd4668 /wd4100 /Itestlib
+CL_FLAGS := /nologo /Wall /WX /wd4710 /wd4668 /wd4100 /Itestlib /Isrc
 # CL_FLAGS := /nologo /wd4710 /Itestlib
 LINK_FLAGS := /nologo
 
-all: test_mpcstl.exe
+all: test_mpcstl.exe test_ctest.exe
 
 clean:
 	rm test_ctest.exe test/test_ctest.obj
@@ -24,11 +24,24 @@ clean:
 # $@ is the target of the rule
 # $^ is all inputs
 # $< is the first input
-test_mpcstl.exe: testlib/ctest.obj test/test_ctest_suite1.obj test/test_ctest_suite2.obj
+test_ctest.exe: testlib/ctest.obj testlib/example_suite1.obj testlib/example_suite2.obj
+	link $(LINK_FLAGS) /out:$@ $^
+
+test_mpcstl.exe: testlib/ctest.obj test/vector.obj
 	link $(LINK_FLAGS) /out:$@ $^
 
 # make obj files from their corresponding c files
-%.obj: %.c
-	cl $(CL_FLAGS) /c /Fo:$@ $<
+# /Tc<file> says to compile the next file as c, we need it because we're using
+# .E to indicate a preprocessed and pretty-printed c file
+%.obj: %.E
+	cl $(CL_FLAGS) /c /Fo:$@ /Tc$<
 
+# don't delete the .E files that we're using
+.PRECIOUS: %.E
+
+# make preprocessed files from their corresponding c files
+# -n is don't keep .orig, just modify in place without making a backup
+%.E: %.c
+	cl $(CL_FLAGS) /P /Fi:$@ $<
+	astyle --style=google -n $@
 
