@@ -369,7 +369,7 @@ int main(int argc, const char *argv[])
 #define CTEST_DEC_STRIDE(p) ((struct ctest*)(((uint8_t*)p) - stride))
 #define CTEST_INC_STRIDE(p) ((struct ctest*)(((uint8_t*)p) + stride))
 
-    printf("Begin: %p, End: %p, Stride: %d\n", ctest_begin, ctest_end, stride);
+    // printf("Begin: %p, End: %p, Stride: %d\n", ctest_begin, ctest_end, stride);
     // find begin and end of section by comparing magics
     while (1) {
         struct ctest* t = CTEST_DEC_STRIDE(ctest_begin);
@@ -384,8 +384,8 @@ int main(int argc, const char *argv[])
         ctest_end = CTEST_INC_STRIDE(ctest_end);
     }
     ctest_end = CTEST_INC_STRIDE(ctest_end);    // end after last one
-    printf("# Tests: %d\n", (((uint8_t*)ctest_end) - ((uint8_t*)ctest_begin))/stride);
-    printf("Sizeof ctest: %d\n", sizeof(struct ctest));
+    // printf("# Tests: %d\n", (((uint8_t*)ctest_end) - ((uint8_t*)ctest_begin))/stride);
+    // printf("Sizeof ctest: %d\n", sizeof(struct ctest));
 
     static struct ctest* test;
     for (test = ctest_begin; test != ctest_end; test = CTEST_INC_STRIDE(test)) {
