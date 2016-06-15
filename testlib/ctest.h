@@ -16,6 +16,16 @@
 #ifndef CTEST_H
 #define CTEST_H
 
+#if _WIN32
+// problem avoided here was:
+// C:\Program Files (x86)\Windows Kits\10\include\10.0.10586.0\ucrt\corecrt_io.h(49): warning C4820: '_finddata32i64_t': '4' bytes padding added after data member 'name'
+#pragma warning( disable : 4820 )
+#include "io.h" // isatty
+#pragma warning( default : 4820 )
+#define isatty _isatty
+#endif
+
+
 typedef void (*SetupFunc)(void*);
 typedef void (*TearDownFunc)(void*);
 
@@ -23,7 +33,7 @@ typedef void (*TearDownFunc)(void*);
 struct ctest {
     const char* ssname;  // suite name
     const char* ttname;  // test name
-    void (*run)();
+    void (*run)(void);
     int skip;
 
     void* data;
@@ -82,9 +92,9 @@ struct ctest {
     void __attribute__ ((weak)) sname##_teardown(struct sname##_data* data)
 
 #define __CTEST_INTERNAL(sname, tname, _skip) \
-    void __FNAME(sname, tname)(); \
+    void __FNAME(sname, tname)(void); \
     __CTEST_STRUCT(sname, tname, _skip, NULL, NULL, NULL); \
-    void __FNAME(sname, tname)()
+    void __FNAME(sname, tname)(void)
 
 #ifdef __APPLE__
 #define SETUP_FNAME(sname) NULL
@@ -201,7 +211,7 @@ static void msg_start(const char* color, const char* title) {
     ctest_errormsg += size;
 }
 
-static void msg_end() {
+static void msg_end(void) {
     int size;
     if (color_output) {
         size = snprintf(ctest_errormsg, ctest_errorsize, ANSI_NORMAL);
@@ -305,7 +315,7 @@ static int suite_filter(struct ctest* t) {
 }
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-static uint64_t getCurrentTime() {
+static uint64_t getCurrentTime(void) {
     return 0;
 }
 #else
