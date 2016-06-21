@@ -86,7 +86,17 @@ MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM item) {
 		vec->items[vec->used] = item;
 		vec->used++;
 	} else {
-		FAIL(MptFailure);
+		VectorITEM * tmp_items = NULL;
+		// Here we need to realloc
+		if (vec->available * 2 < vec->available) {
+			FAIL(MptIntOverflow);
+		}
+
+		tmp_items = realloc(vec->items, vec->available * 2);
+		
+		NOTNULL(tmp_items);
+
+		vec->items = tmp_items;
 	}
 
 	res = MptSuccess;

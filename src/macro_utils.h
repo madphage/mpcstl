@@ -9,7 +9,8 @@
 typedef enum _MptStatus {
 	MptSuccess = 0,
 	MptFailure = -1,
-	MptUnexpected = -2
+	MptUnexpected = -2,
+	MptIntOverflow = -3,
 } MptStatus;
 
 #define RUNTIME_ASSERT(x) { \

@@ -25,7 +25,7 @@ test_ctest: test_ctest.exe
 	test_ctest
 
 clean:
-	rm test_ctest.exe test/test_ctest.obj
+	rm test_ctest.exe test_mpcstl.exe test/test_ctest.obj test/vector.obj
 
 # $@ is the target of the rule
 # $^ is all inputs
@@ -43,6 +43,7 @@ test_mpcstl.exe: testlib/ctest.obj test/vector.obj
 	cl $(CL_FLAGS) /c /Fo:$@ /Tc$<
 
 # don't delete the .E files that we're using
+.SECONDARY: %.E
 .PRECIOUS: %.E
 
 # make preprocessed files from their corresponding c files
