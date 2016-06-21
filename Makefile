@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean test test_ctest
 
 # /Wall /WX is enable all warnings and treat them as errors
 #  /wd<num> is disable a warning
@@ -17,6 +17,12 @@ CL_FLAGS := /nologo /Wall /WX /wd4710 /wd4668 /wd4100 /Itestlib /Isrc
 LINK_FLAGS := /nologo
 
 all: test_mpcstl.exe test_ctest.exe
+
+test: test_mpcstl.exe
+	test_mpcstl
+
+test_ctest: test_ctest.exe
+	test_ctest
 
 clean:
 	rm test_ctest.exe test/test_ctest.obj

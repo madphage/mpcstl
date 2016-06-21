@@ -30,6 +30,12 @@ typedef struct mptStructName {
 
 mptTypeName * mptTypeFunc(mk_prealloc)(uint32_t num_entries);
 
+#if VectorITEM_primitive
+MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM item);
+#else
+MptStatue mptTypeFunc(push)(mptTypeName * vec, VectorITEM * item);
+#endif
+
 #endif //mptDeclare
 
 #if mptDefine
@@ -70,6 +76,27 @@ Exit:
 	
 	return res;
 }
+
+#if VectorITEM_primitive
+MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM item) {
+	MptStatus res = MptUnexpected;
+	NOTNULL(vec);
+
+	if (vec->used < vec->available) { // we have space
+		vec->items[vec->used] = item;
+		vec->used++;
+	} else {
+		FAIL(MptFailure);
+	}
+
+	res = MptSuccess;
+
+Exit:
+	return res;
+}
+#else
+#error "haven't defined struct push yet
+#endif
 
 #endif //mptDefine
 

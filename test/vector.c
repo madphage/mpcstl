@@ -22,16 +22,18 @@ typedef struct _BasicStructItem {
 // where both can be 1 at the same time if we want the definition to follow the declaration
 // everything unused will be undefined at the end of the
 
-#define VectorITEM uint32_t
+typedef uint32_t Uint32;
+
+#define VectorITEM Uint32
 #define VectorITEM_primitive 1
 #define mptDefine 1
 #include "vector.mpt"
 
 CTEST(vector, alloc) {
 	size_t i = 0;
-	Vuint32_t * uint32_vector = NULL;
+	VUint32 * uint32_vector = NULL;
 
-	uint32_vector = Vuint32_t_mk_prealloc(4);
+	uint32_vector = VUint32_mk_prealloc(4);
 	ASSERT_TRUE(uint32_vector != NULL);
 	ASSERT_TRUE(uint32_vector->available == 4);
 	ASSERT_TRUE(uint32_vector->used == 0);
@@ -39,4 +41,9 @@ CTEST(vector, alloc) {
 	for (i = 0; i < 4; ++i) {
 		ASSERT_TRUE(uint32_vector->items[i] == 0);
 	}
+
+	VUint32_push(uint32_vector, 1);
+	ASSERT_TRUE(uint32_vector->items[0] == 1);
+	ASSERT_TRUE(uint32_vector->available == 4);
+	ASSERT_TRUE(uint32_vector->used == 1);
 }
