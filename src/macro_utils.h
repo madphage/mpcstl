@@ -26,3 +26,4 @@ typedef enum _MptStatus {
 	goto Exit; \
 }
 
+#define ObjCall(o, fname, ...) o.cls->fname(o.obj, __VA_ARGS__)

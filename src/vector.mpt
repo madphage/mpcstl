@@ -22,6 +22,39 @@
 
 #include "macro_utils.h"
 
+#ifndef Vector_INCLUDE_ONCE
+#define Vector_INCLUDE_ONCE
+typedef MptStatus (*Vector_push_func)(void * v, void * item);
+typedef uint32_t (*Vector_len_func)(void * v);
+typedef uint32_t (*Vector_alloc_len_func)(void * v);
+typedef MptStatus (*Vector_item_func)(void * v, uint32_t index, void * item_ptr);
+
+typedef struct _VectorClass {
+	Vector_push_func push;
+	Vector_len_func len;
+	Vector_alloc_len_func alloc_len;
+	Vector_item_func item;
+} VectorClass;
+
+typedef struct _Obj {
+	void * obj;
+	const VectorClass * cls;
+} VectorObj;
+
+typedef struct _VecHeader {
+	uint32_t available;
+	uint32_t used;
+} VecHeader;
+
+uint32_t VecHeader_len(VecHeader * v);
+uint32_t VecHeader_alloc_len(VecHeader * v);
+
+#define Vector_declare(name, vtypename, sz) \
+	VectorObj name  = { .cls = &CAT(vtypename, Class), .obj = NULL }; \
+	name.obj = CAT(vtypename, _mk_prealloc)(sz)
+
+#endif
+
 typedef struct mptStructName {
 	uint32_t available;
 	uint32_t used;
@@ -32,13 +65,29 @@ mptTypeName * mptTypeFunc(mk_prealloc)(uint32_t num_entries);
 
 #if VectorITEM_primitive
 MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM item);
+MptStatus mptTypeFunc(item)(mptTypeName * vec, uint32_t index, VectorITEM * item);
 #else
-MptStatue mptTypeFunc(push)(mptTypeName * vec, VectorITEM * item);
+MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM * item);
+MptStatus mptTypeFunc(item)(mptTypeName * vec, uint32_t index, VectorITEM ** item);
 #endif
+
+static const VectorClass CAT(mptTypeName, Class) = {
+	.len		= (Vector_len_func) VecHeader_len,
+	.alloc_len	= (Vector_alloc_len_func) VecHeader_alloc_len,
+	.push		= (Vector_push_func) mptTypeFunc(push),
+	.item		= (Vector_item_func) mptTypeFunc(item),
+};
 
 #endif //mptDeclare
 
 #if mptDefine
+
+#ifndef Vector_DEFINE_ONCE
+#define Vector_DEFINE_ONCE
+uint32_t VecHeader_len(VecHeader * v) { return v->used; }
+uint32_t VecHeader_alloc_len(VecHeader * v) { return v->available; }
+
+#endif
 
 mptTypeName * mptTypeFunc(mk_prealloc)(uint32_t num_entries) {
 	mptTypeName * res = NULL;

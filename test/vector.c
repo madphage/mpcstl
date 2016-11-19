@@ -51,3 +51,14 @@ CTEST(vector, alloc) {
 	ASSERT_TRUE(MptSuccess == VUint32_push(uint32_vector, 4));
 	ASSERT_TRUE(MptSuccess == VUint32_push(uint32_vector, 5));
 }
+
+CTEST(vector, wrapper) {
+	Vector_declare(v, VUint32, 4);
+	uint32_t i;
+	uint32_t val = 4;
+	ASSERT_TRUE(MptSuccess == ObjCall(v, push, &val));
+	ASSERT_TRUE(1 == ObjCall(v, len));
+	ASSERT_TRUE(4 == ObjCall(v, alloc_len));
+	ASSERT_TRUE(MptSuccess == ObjCall(v, item, 0, &i));
+	ASSERT_TRUE(4 == i);
+}
