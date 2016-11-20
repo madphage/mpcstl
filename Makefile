@@ -48,7 +48,8 @@ test_mpcstl.exe: testlib/ctest.obj test/vector.obj
 
 # make preprocessed files from their corresponding c files
 # -n is don't keep .orig, just modify in place without making a backup
-%.E: %.c
+%.E: %.c src/*.mpt src/*.h
 	cl $(CL_FLAGS) /P /Fi:$@ $<
 	astyle --style=google -n $@
+
 

@@ -42,14 +42,11 @@ CTEST(vector, alloc) {
 		ASSERT_TRUE(uint32_vector->items[i] == 0);
 	}
 
-	VUint32_push(uint32_vector, 1);
+	uint32_t v = 1;
+	VUint32_push(uint32_vector, &v);
 	ASSERT_TRUE(uint32_vector->items[0] == 1);
 	ASSERT_TRUE(uint32_vector->available == 4);
 	ASSERT_TRUE(uint32_vector->used == 1);
-	ASSERT_TRUE(MptSuccess == VUint32_push(uint32_vector, 2));
-	ASSERT_TRUE(MptSuccess == VUint32_push(uint32_vector, 3));
-	ASSERT_TRUE(MptSuccess == VUint32_push(uint32_vector, 4));
-	ASSERT_TRUE(MptSuccess == VUint32_push(uint32_vector, 5));
 }
 
 CTEST(vector, wrapper) {

@@ -145,8 +145,8 @@ void assert_null(void* real, const char* caller, int line);
 void assert_not_null(void* real, const char* caller, int line);
 #define ASSERT_NOT_NULL(real) assert_not_null(real, __FILE__, __LINE__)
 
-void assert_true(int real, const char* caller, int line);
-#define ASSERT_TRUE(real) assert_true(real, __FILE__, __LINE__)
+void assert_true(int real, const char* caller, int line, const char * expr);
+#define ASSERT_TRUE(real) assert_true(real, __FILE__, __LINE__, #real)
 
 void assert_false(int real, const char* caller, int line);
 #define ASSERT_FALSE(real) assert_false(real, __FILE__, __LINE__)

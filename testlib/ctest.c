@@ -120,9 +120,9 @@ void assert_not_null(void* real, const char* caller, int line) {
     }
 }
 
-void assert_true(int real, const char* caller, int line) {
+void assert_true(int real, const char* caller, int line, const char * expr) {
     if ((real) == 0) {
-        CTEST_ERR("%s:%d  should be true", caller, line);
+        CTEST_ERR("%s on %s:%d  should be true", expr, caller, line);
         longjmp(ctest_err, 1);
     }
 }

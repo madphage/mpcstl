@@ -63,13 +63,8 @@ typedef struct mptStructName {
 
 mptTypeName * mptTypeFunc(mk_prealloc)(uint32_t num_entries);
 
-#if VectorITEM_primitive
-MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM item);
-MptStatus mptTypeFunc(item)(mptTypeName * vec, uint32_t index, VectorITEM * item);
-#else
 MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM * item);
-MptStatus mptTypeFunc(item)(mptTypeName * vec, uint32_t index, VectorITEM ** item);
-#endif
+MptStatus mptTypeFunc(item)(mptTypeName * vec, uint32_t index, VectorITEM * item);
 
 static const VectorClass CAT(mptTypeName, Class) = {
 	.len		= (Vector_len_func) VecHeader_len,
@@ -127,12 +122,13 @@ Exit:
 }
 
 #if VectorITEM_primitive
-MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM item) {
+MptStatus mptTypeFunc(push)(mptTypeName * vec, VectorITEM * item) {
 	MptStatus res = MptUnexpected;
 	NOTNULL(vec);
+	NOTNULL(item);
 
 	if (vec->used < vec->available) { // we have space
-		vec->items[vec->used] = item;
+		vec->items[vec->used] = *item;
 		vec->used++;
 	} else {
 		VectorITEM * tmp_items = NULL;
@@ -154,7 +150,25 @@ Exit:
 	return res;
 }
 #else
-#error "haven't defined struct push yet
+#error "haven't defined struct push yet"
+#endif
+
+#if VectorITEM_primitive
+MptStatus mptTypeFunc(item)(mptTypeName * vec, uint32_t index, VectorITEM * item) {
+	MptStatus res = MptUnexpected;
+	NOTNULL(vec);
+
+	if (index < vec->used) {
+		*item = vec->items[index];
+		res = MptSuccess;
+	} else {
+		res = MptFailure;
+	}
+Exit:
+	return res;
+}
+#else
+#error "haven't defined struct item yet"
 #endif
 
 #endif //mptDefine
