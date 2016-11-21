@@ -42,8 +42,7 @@ CTEST(vector, alloc) {
 		ASSERT_TRUE(uint32_vector->items[i] == 0);
 	}
 
-	uint32_t v = 1;
-	VUint32_push(uint32_vector, &v);
+	VUint32_push(uint32_vector, 1);
 	ASSERT_TRUE(uint32_vector->items[0] == 1);
 	ASSERT_TRUE(uint32_vector->available == 4);
 	ASSERT_TRUE(uint32_vector->used == 1);
@@ -52,8 +51,7 @@ CTEST(vector, alloc) {
 CTEST(vector, wrapper) {
 	Vector_declare(v, VUint32, 4);
 	uint32_t i;
-	uint32_t val = 4;
-	ASSERT_TRUE(MptSuccess == ObjCall(v, push, &val));
+	ASSERT_TRUE(MptSuccess == ObjCall(v, push, 4));
 	ASSERT_TRUE(1 == ObjCall(v, len));
 	ASSERT_TRUE(4 == ObjCall(v, alloc_len));
 	ASSERT_TRUE(MptSuccess == ObjCall(v, item, 0, &i));
